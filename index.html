@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SDMMJTracker - HIPAA-compliant South Dakota Medical Cannabis Patient Portal for verification, allotment tracking, and dispensary discovery">
+    <meta name="keywords" content="South Dakota, medical cannabis, patient portal, HIPAA compliant, verification, allotment tracking">
+    <title>SDMMJTracker - South Dakota Medical Cannabis Patient Portal</title>
+    
+    <!-- External Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .hipaa-badge {
+            background: linear-gradient(45deg, #10b981, #059669);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: #ffffff;
+            transition: left 0.3s ease;
+        }
+        .nav-link:hover::before {
+            left: 0;
+        }
+        .section-divider {
+            background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+            height: 1px;
+            margin: 3rem 0;
+        }
+         {
+            .no-print { display: none !important; }
+            .print-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between flex-wrap">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-cannabis text-3xl text-green-300"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">SDMMJTracker</h1>
+                        <p class="text-sm opacity-90">South Dakota Medical Cannabis Patient Portal</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+                    <div class="hipaa-badge px-3 py-1 rounded-full text-xs font-semibold">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        HIPAA Compliant
+                    </div>
+                    <div class="text-sm opacity-90">
+                        Powered by <strong>Trilly Club LLC</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="mt-4 border-t border-white border-opacity-20 pt-4">
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="showSection('dashboard')" class="nav-link px-4 py-2 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                    </button>
+                    <button onclick="showSection('verification')" class="nav-link px-4 py-2 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i class="fas fa-check-circle mr-1"></i> Verification
+                    </button>
+                    <button onclick="showSection('dispensaries')" class="nav-link px-4 py-2 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Dispensaries
+                    </button>
+                    <button onclick="showSection('compliance')" class="nav-link px-4 py-2 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i class="fas fa-gavel mr-1"></i> Compliance
+                    </button>
+                    <button onclick="showSection('business')" class="nav-link px-4 py-2 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i class="fas fa-handshake mr-1"></i> Business
+                    </button>
+                    <button onclick="showSection('legal')" class="nav-link px-4 py-2 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i class="fas fa-file-contract mr-1"></i> Legal
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <!-- Patient Verification Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-hover">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-user-check text-3xl text-blue-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">Patient Verification</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Verify Your Medical Card</h3>
+                        <form id="verificationForm" class="space-y-4">
+                            <div>
+                                <label for="cardNumber" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Medical Card Number <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="cardNumber" 
+                                    name="cardNumber"
+                                    placeholder="Enter your card number"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                    aria-describedby="cardNumberHelp"
+                                >
+                                <p id="cardNumberHelp" class="text-sm text-gray-500 mt-1">
+                                    Your card number is encrypted and stored securely
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <label for="dateOfBirth" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Date of Birth <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="dateOfBirth" 
+                                    name="dateOfBirth"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                >
+                            </div>
+                            
+                            <button 
+                                type="submit" 
+                                class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-semibold"
+                            >
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Verify Card
+                            </button>
+                        </form>
+                        
+                        <p class="text-sm text-gray-600 mt-4">
+                            <i class="fas fa-lock mr-1"></i>
+                            All verification data is encrypted and HIPAA compliant
+                        </p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-800 mb-4">Verification Status</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <div class="status-indicator bg-green-500 mr-3"></div>
+                                <span class="text-sm text-green-700">Connected to SD Verification System</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="status-indicator bg-green-500 mr-3"></div>
+                                <span class="text-sm text-green-700">Real-time Data Sync Active</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-3 bg-white rounded border">
+                            <p class="text-sm text-gray-600">
+                                <strong>Data sourced from:</strong> medcannabisverify.sd.gov
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-Time Allotment Tracking -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-hover">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-chart-line text-3xl text-green-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">Real-Time Allotment Tracking</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-green-50 p-6 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-green-600">1.2 oz</div>
+                        <div class="text-sm text-gray-600 mt-1">Remaining Allotment</div>
+                        <div class="text-xs text-gray-500">of 2.5 oz monthly limit</div>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-6 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-blue-600">12</div>
+                        <div class="text-sm text-gray-600 mt-1">Days Until Reset</div>
+                        <div class="text-xs text-gray-500">Next reset: Nov 15, 2024</div>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-6 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-purple-600">$324.50</div>
+                        <div class="text-sm text-gray-600 mt-1">Total Spent (Month)</div>
+                        <div class="text-xs text-gray-500">Average: $25/gram</div>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-6 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-orange-600">Oct 28</div>
+                        <div class="text-sm text-gray-600 mt-1">Last Purchase</div>
+                        <div class="text-xs text-gray-500">Genesis Farms - RC</div>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Monthly Allotment Usage</h3>
+                        <div style="height: 300px;">
+                            <canvas id="allotmentChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-search mr-2"></i>
+                                Find Dispensaries
+                            </button>
+                            <button class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-chart-bar mr-2"></i>
+                                Compare Prices
+                            </button>
+                            <button class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-history mr-2"></i>
+                                Purchase History
+                            </button>
+                        </div>
+                        
+                        <div class="bg-yellow-50 p-4 rounded-lg mt-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-1"></i>
+                                <div>
+                                    <h4 class="font-semibold text-yellow-800">Age Restrictions</h4>
+                                    <ul class="text-sm text-yellow-700 mt-1 space-y-1">
+                                        <li><strong>18-20:</strong> Edibles only</li>
+                                        <li><strong>21+:</strong> Full access to all products</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Purchase History -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-hover">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-receipt text-3xl text-purple-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">Recent Purchase History</h2>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Dispensary</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Product</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Amount</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Price</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm text-gray-900">Oct 28, 2024</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">Genesis Farms</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">Indica Gummies 10mg</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">0.25 oz</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">$45.00</td>
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                        Completed
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm text-gray-900">Oct 22, 2024</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">Rapid Relief</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">Hybrid Flower</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">0.5 oz</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">$120.00</td>
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                        Completed
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm text-gray-900">Oct 15, 2024</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">Prairie Wellness</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">CBD Tincture</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">0.1 oz</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">$35.00</td>
+                                <td class="px-4 py-3">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                        Completed
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Verification Section -->
+        <section id="verification" class="section hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-shield-check text-3xl text-blue-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">Patient Verification System</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Advanced Verification</h3>
+                        <form id="advancedVerificationForm" class="space-y-4">
+                            <div>
+                                <label for="patientId" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Patient ID
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="patientId" 
+                                    name="patientId"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                            </div>
+                            
+                            <div>
+                                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Phone Number
+                                </label>
+                                <input 
+                                    type="tel" 
+                                    id="phoneNumber" 
+                                    name="phoneNumber"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                            </div>
+                            
+                            <div>
+                                <label for="zipCode" class="block text-sm font-medium text-gray-700 mb-2">
+                                    ZIP Code
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="zipCode" 
+                                    name="zipCode"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                            </div>
+                            
+                            <button 
+                                type="submit" 
+                                class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-semibold"
+                            >
+                                <i class="fas fa-search mr-2"></i>
+                                Advanced Verify
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-4">Verification Status</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-white rounded border">
+                                <span class="text-sm font-medium">System Connected</span>
+                                <i class="fas fa-check-circle text-green-600"></i>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-white rounded border">
+                                <span class="text-sm font-medium">Real-time Sync</span>
+                                <i class="fas fa-sync-alt text-blue-600 animate-spin"></i>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-white rounded border">
+                                <span class="text-sm font-medium">HIPAA Compliant</span>
+                                <i class="fas fa-shield-alt text-green-600"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-3 bg-white rounded border">
+                            <p class="text-sm text-gray-600">
+                                <strong>Connected to:</strong> SD Department of Health database<br>
+                                <strong>Sync Frequency:</strong> Data synchronized every 15 minutes<br>
+                                <strong>Encryption:</strong> All data encrypted with AES-256 encryption
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Dispensaries Section -->
+        <section id="dispensaries" class="section hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-store text-3xl text-green-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">Find Dispensaries by City</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-4 mb-8">
+                    <div>
+                        <label for="citySelect" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select City
+                        </label>
+                        <select id="citySelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">All Cities</option>
+                            <option value="rapid-city">Rapid City</option>
+                            <option value="sioux-falls">Sioux Falls</option>
+                            <option value="aberdeen">Aberdeen</option>
+                            <option value="pierre">Pierre</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="productSelect" class="block text-sm font-medium text-gray-700 mb-2">
+                            Product Type
+                        </label>
+                        <select id="productSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">All Products</option>
+                            <option value="flower">Flower</option>
+                            <option value="edibles">Edibles</option>
+                            <option value="concentrates">Concentrates</option>
+                            <option value="tinctures">Tinctures</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="sortSelect" class="block text-sm font-medium text-gray-700 mb-2">
+                            Sort By
+                        </label>
+                        <select id="sortSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="distance">Distance</option>
+                            <option value="price">Price</option>
+                            <option value="rating">Rating</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="dispensaryResults" class="grid md:grid-cols-3 gap-6">
+                    <!-- Genesis Farms Cannabis -->
+                    <div class="border border-gray-200 rounded-lg p-6 card-hover">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Genesis Farms Cannabis</h3>
+                                <p class="text-sm text-gray-600">Rapid City, SD • 2.3 mi</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-semibold text-green-600">$15-$45/g</div>
+                                <div class="flex items-center mt-1">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Premium cannabis products with lab testing</p>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <i class="fas fa-phone mr-1"></i>
+                                Call
+                            </button>
+                            <button class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                                <i class="fas fa-directions mr-1"></i>
+                                Directions
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Prairie Wellness -->
+                    <div class="border border-gray-200 rounded-lg p-6 card-hover">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Prairie Wellness</h3>
+                                <p class="text-sm text-gray-600">Sioux Falls, SD • 1.8 mi</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-semibold text-green-600">$18-$42/g</div>
+                                <div class="flex items-center mt-1">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Wellness-focused cannabis dispensary</p>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <i class="fas fa-phone mr-1"></i>
+                                Call
+                            </button>
+                            <button class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                                <i class="fas fa-directions mr-1"></i>
+                                Directions
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Rapid Relief Dispensary -->
+                    <div class="border border-gray-200 rounded-lg p-6 card-hover">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Rapid Relief Dispensary</h3>
+                                <p class="text-sm text-gray-600">Aberdeen, SD • 3.1 mi</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-semibold text-green-600">$12-$38/g</div>
+                                <div class="flex items-center mt-1">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <i class="fas fa-star text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">Fast service and competitive pricing</p>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <i class="fas fa-phone mr-1"></i>
+                                Call
+                            </button>
+                            <button class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                                <i class="fas fa-directions mr-1"></i>
+                                Directions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Compliance Section -->
+        <section id="compliance" class="section hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-balance-scale text-3xl text-blue-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">South Dakota MMJ Laws & Compliance</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-4">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            Age Requirements
+                        </h3>
+                        <ul class="space-y-2 text-sm text-blue-700">
+                            <li><strong>18-20 years:</strong> Edibles and non-inhalant products only</li>
+                            <li><strong>21+ years:</strong> Full access to all cannabis products</li>
+                            <li>Valid medical recommendation required</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-800 mb-4">
+                            <i class="fas fa-weight mr-2"></i>
+                            Possession Limits
+                        </h3>
+                        <ul class="space-y-2 text-sm text-green-700">
+                            <li>3 ounces of cannabis flower per month</li>
+                            <li>Equivalent amounts for other product forms</li>
+                            <li>Home cultivation: Up to 4 plants (if allowed)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-purple-800 mb-4">
+                            <i class="fas fa-user-friends mr-2"></i>
+                            Caregiver Rights
+                        </h3>
+                        <ul class="space-y-2 text-sm text-purple-700">
+                            <li>Can purchase for registered patients</li>
+                            <li>Must maintain valid caregiver card</li>
+                            <li>Same possession limits apply</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-8 grid md:grid-cols-2 gap-8">
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Become a Patient/Caregiver</h3>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-gray-700 mb-2">SD Residents:</h4>
+                            <ol class="list-decimal list-inside space-y-1 text-sm text-gray-600">
+                                <li>Obtain physician recommendation</li>
+                                <li>Complete state application online</li>
+                                <li>Pay $100 application fee</li>
+                                <li>Receive card within 30 days</li>
+                            </ol>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2">Non-Residents:</h4>
+                            <ol class="list-decimal list-inside space-y-1 text-sm text-gray-600">
+                                <li>Must have valid medical card from home state</li>
+                                <li>Apply for temporary visitor permit</li>
+                                <li>Pay $50 temporary permit fee</li>
+                                <li>Valid for 30-day periods</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-red-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-red-800 mb-4">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Important Restrictions
+                        </h3>
+                        <ul class="space-y-2 text-sm text-red-700">
+                            <li>No consumption in public places</li>
+                            <li>No driving under the influence</li>
+                            <li>No sale or distribution to others</li>
+                            <li>Must keep products in original packaging</li>
+                            <li>No consumption on federal property</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Business Section -->
+        <section id="business" class="section hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-handshake text-3xl text-green-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">Business Plans & Partnership Opportunities</h2>
+                </div>
+                
+                <!-- Dispensary Partnership Program -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Dispensary Partnership Program</h3>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-blue-50 p-6 rounded-lg">
+                            <h4 class="text-lg font-semibold text-blue-800 mb-4">Integration Benefits</h4>
+                            <ul class="space-y-2 text-sm text-blue-700">
+                                <li>Real-time inventory synchronization</li>
+                                <li>Automated compliance reporting</li>
+                                <li>Patient verification system access</li>
+                                <li>Analytics and business intelligence</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <h4 class="text-lg font-semibold text-green-800 mb-4">Revenue Sharing</h4>
+                            <ul class="space-y-2 text-sm text-green-700">
+                                <li>15% commission on referred sales</li>
+                                <li>Premium listing placement</li>
+                                <li>Featured dispensary promotions</li>
+                                <li>Dedicated account management</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-6 rounded-lg">
+                            <h4 class="text-lg font-semibold text-purple-800 mb-4">Technical Support</h4>
+                            <ul class="space-y-2 text-sm text-purple-700">
+                                <li>API integration assistance</li>
+                                <li>Staff training programs</li>
+                                <li>24/7 technical support</li>
+                                <li>Regular platform updates</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Business Intelligence Suite -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Business Intelligence Suite</h3>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-orange-50 p-6 rounded-lg text-center">
+                            <i class="fas fa-chart-line text-3xl text-orange-600 mb-3"></i>
+                            <h4 class="font-semibold text-orange-800 mb-2">Market Analytics</h4>
+                            <p class="text-sm text-orange-700">Comprehensive market data, pricing trends, and consumer behavior analysis</p>
+                        </div>
+                        
+                        <div class="bg-teal-50 p-6 rounded-lg text-center">
+                            <i class="fas fa-users text-3xl text-teal-600 mb-3"></i>
+                            <h4 class="font-semibold text-teal-800 mb-2">Customer Insights</h4>
+                            <p class="text-sm text-teal-700">Patient demographics, preferences, and purchasing patterns</p>
+                        </div>
+                        
+                        <div class="bg-red-50 p-6 rounded-lg text-center">
+                            <i class="fas fa-clipboard-check text-3xl text-red-600 mb-3"></i>
+                            <h4 class="font-semibold text-red-800 mb-2">Compliance Automation</h4>
+                            <p class="text-sm text-red-700">Automated reporting, audit trails, and regulatory compliance monitoring</p>
+                        </div>
+                        
+                        <div class="bg-indigo-50 p-6 rounded-lg text-center">
+                            <i class="fas fa-mobile-alt text-3xl text-indigo-600 mb-3"></i>
+                            <h4 class="font-semibold text-indigo-800 mb-2">Mobile Integration</h4>
+                            <p class="text-sm text-indigo-700">White-label mobile app solutions for dispensaries</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API Integration Partners -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">API Integration Partners</h3>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="border border-gray-200 rounded-lg p-6 text-center card-hover">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-cash-register text-2xl text-green-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Dutchie Integration</h4>
+                            <p class="text-sm text-gray-600">Seamless POS and inventory management</p>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-6 text-center card-hover">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-leaf text-2xl text-green-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Leafly Partnership</h4>
+                            <p class="text-sm text-gray-600">Product information and strain database</p>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-6 text-center card-hover">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-map-marked-alt text-2xl text-green-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Weedmaps Connector</h4>
+                            <p class="text-sm text-gray-600">Location services and dispensary discovery</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Form for Business Inquiries -->
+                <div class="mt-8 bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Partner With Us</h3>
+                    <form id="businessInquiryForm" class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="businessName" class="block text-sm font-medium text-gray-700 mb-2">
+                                Business Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="businessName" 
+                                name="businessName"
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                required
+                            >
+                        </div>
+                        
+                        <div>
+                            <label for="contactEmail" class="block text-sm font-medium text-gray-700 mb-2">
+                                Contact Email
+                            </label>
+                            <input 
+                                type="email" 
+                                id="contactEmail" 
+                                name="contactEmail"
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                required
+                            >
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label for="partnershipType" class="block text-sm font-medium text-gray-700 mb-2">
+                                Partnership Interest
+                            </label>
+                            <select id="partnershipType" name="partnershipType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <option value="">Select Partnership Type</option>
+                                <option value="dispensary">Dispensary Integration</option>
+                                <option value="technology">Technology Partnership</option>
+                                <option value="investment">Investment Opportunity</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="md:col-span-2">  
+                            <button 
+                                type="submit" 
+                                class="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 font-semibold"
+                            >
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Submit Inquiry
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Legal Section -->
+        <section id="legal" class="section hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-file-contract text-3xl text-blue-600 mr-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">Legal & Compliance Documentation</h2>
+                </div>
+                
+                <!-- Privacy Policy -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Privacy Policy</h3>
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-4">
+                            <strong>Effective Date:</strong> November 1, 2024<br>
+                            <strong>Last Updated:</strong> November 1, 2024
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">1. Information We Collect</h4>
+                                <p class="text-sm text-gray-600">
+                                    We collect the following types of information to provide medical cannabis tracking services:
+                                </p>
+                                <ul class="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
+                                    <li><strong>Personal Health Information (PHI):</strong> Medical card numbers, physician information, qualifying conditions</li>
+                                    <li><strong>Personal Information:</strong> Name, date of birth, address, phone number, email address</li>
+                                    <li><strong>Usage Data:</strong> Cannabis purchase history, allotment tracking, dispensary visits</li>
+                                    <li><strong>Technical Data:</strong> IP address, browser type, device information, usage analytics</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">2. How We Use Your Information</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li>Verify medical cannabis patient status with South Dakota Department of Health</li>
+                                    <li>Track monthly allotment usage and compliance</li>
+                                    <li>Provide dispensary recommendations and price comparisons</li>
+                                    <li>Generate compliance reports for regulatory purposes</li>
+                                    <li>Improve our services and user experience</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">3. Information Sharing and Disclosure</h4>
+                                <p class="text-sm text-gray-600 mb-2">We may share your information only in the following circumstances:</p>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li>With your explicit consent</li>
+                                    <li>As required by law or regulatory authorities</li>
+                                    <li>To comply with HIPAA-covered entity requirements</li>
+                                    <li>With verified dispensary partners for transaction processing</li>
+                                    <li>For emergency medical situations</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">4. Data Security</h4>
+                                <p class="text-sm text-gray-600 mb-2">We implement industry-standard security measures:</p>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li>AES-256 encryption for all PHI storage</li>
+                                    <li>TLS 1.3 encryption for data transmission</li>
+                                    <li>Multi-factor authentication for account access</li>
+                                    <li>Regular security audits and penetration testing</li>
+                                    <li>HIPAA-compliant cloud infrastructure</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terms of Service -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Terms of Service</h3>
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-4">
+                            <strong>Effective Date:</strong> November 1, 2024
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">1. Acceptance of Terms</h4>
+                                <p class="text-sm text-gray-600">
+                                    By accessing and using SDMMJTracker ("Service"), you accept and agree to be bound by the terms and provision of this agreement.
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">2. Description of Service</h4>
+                                <p class="text-sm text-gray-600 mb-2">SDMMJTracker provides:</p>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li>Medical cannabis patient verification services</li>
+                                    <li>Monthly allotment tracking and compliance monitoring</li>
+                                    <li>Dispensary location and price comparison tools</li>
+                                    <li>Cannabis purchase history management</li>
+                                    <li>Regulatory compliance reporting</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">3. Eligibility</h4>
+                                <p class="text-sm text-gray-600 mb-2">To use our Service, you must:</p>
+                                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                    <li>Be at least 18 years of age</li>
+                                    <li>Hold a valid South Dakota medical cannabis card</li>
+                                    <li>Provide accurate and truthful information</li>
+                                    <li>Comply with all applicable state and federal laws</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- HIPAA Compliance Statement -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">HIPAA Compliance Statement</h3>
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-shield-alt text-2xl text-green-600 mr-3"></i>
+                            <h4 class="text-lg font-semibold text-green-800">HIPAA Compliant Platform</h4>
+                        </div>
+                        <p class="text-sm text-green-700 mb-4">
+                            SDMMJTracker is fully compliant with the Health Insurance Portability and Accountability Act (HIPAA) of 1996.
+                        </p>
+                        
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded">
+                                <h5 class="font-semibold text-gray-800 mb-2">Administrative Safeguards</h5>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    <li>Designated HIPAA Security Officer</li>
+                                    <li>Workforce training and access management</li>
+                                    <li>Regular security risk assessments</li>
+                                    <li>Business Associate Agreements (BAAs)</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded">
+                                <h5 class="font-semibold text-gray-800 mb-2">Physical Safeguards</h5>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    <li>Secure data centers with 24/7 monitoring</li>
+                                    <li>Biometric and multi-factor access controls</li>
+                                    <li>Environmental monitoring</li>
+                                    <li>Secure workstation controls</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded">
+                                <h5 class="font-semibold text-gray-800 mb-2">Technical Safeguards</h5>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    <li>AES-256 encryption for data at rest</li>
+                                    <li>TLS 1.3 encryption for data in transit</li>
+                                    <li>Automated access controls and audit logs</li>
+                                    <li>Regular vulnerability scanning</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-white rounded">
+                            <h5 class="font-semibold text-gray-800 mb-2">Patient Rights Under HIPAA</h5>
+                            <p class="text-sm text-gray-600 mb-2">As a patient, you have the right to:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                <li>Access and obtain copies of your PHI</li>
+                                <li>Request amendments to your PHI</li>
+                                <li>Request restrictions on use and disclosure</li>
+                                <li>Request confidential communications</li>
+                                <li>File complaints about privacy practices</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cookie Policy -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Cookie Policy</h3>
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-4">
+                            <strong>Last Updated:</strong> November 1, 2024
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">1. What Are Cookies</h4>
+                                <p class="text-sm text-gray-600">
+                                    Cookies are small text files that are placed on your computer or mobile device when you visit our website. They are widely used to make websites work more efficiently and provide information to website owners.
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">2. Types of Cookies We Use</h4>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div class="bg-white p-4 rounded border">
+                                        <h5 class="font-semibold text-gray-700 mb-2">Essential Cookies</h5>
+                                        <ul class="text-xs text-gray-600 space-y-1">
+                                            <li>Session management</li>
+                                            <li>Security and fraud prevention</li>
+                                            <li>Load balancing</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded border">
+                                        <h5 class="font-semibold text-gray-700 mb-2">Analytical Cookies</h5>
+                                        <ul class="text-xs text-gray-600 space-y-1">
+                                            <li>Google Analytics</li>
+                                            <li>Page views tracking</li>
+                                            <li>Performance monitoring</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="bg-white p-4 rounded border">
+                                        <h5 class="font-semibold text-gray-700 mb-2">Functional Cookies</h5>
+                                        <ul class="text-xs text-gray-600 space-y-1">
+                                            <li>User preferences</li>
+                                            <li>Language selection</li>
+                                            <li>Personalized content</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-cannabis text-2xl text-green-400"></i>
+                        <span class="text-xl font-bold">SDMMJTracker</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">
+                        HIPAA-compliant South Dakota medical cannabis patient tracking platform.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Services</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Patient Verification</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Allotment Tracking</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Dispensary Finder</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Compliance Reports</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">HIPAA Compliance</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Cookie Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><i class="fas fa-phone mr-2"></i>1-800-SD-MMJ-1</li>
+                        <li><i class="fas fa-envelope mr-2"></i><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dcafa9acacb3aea89cafb8b1b1b6a8aebdbfb7b9aef2bfb3b1">[email&#160;protected]</a></li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i>Rapid City, SD 57701</li>
+                    </ul>
+                    
+                    <div class="mt-4 p-3 bg-green-600 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            <span class="text-sm font-semibold">HIPAA Compliant Platform</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p class="text-sm text-gray-400">
+                    © 2024 SDMMJTracker. All rights reserved. Powered by Trilly Club LLC.
+                </p>
+                <p class="text-xs text-gray-500 mt-2">
+                    This platform is compliant with South Dakota medical cannabis regulations and HIPAA privacy requirements.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Section Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+            
+            // Update active navigation
+            const navButtons = document.querySelectorAll('.nav-link');
+            navButtons.forEach(button => {
+                button.classList.remove('bg-white', 'bg-opacity-30');
+                button.classList.add('bg-white', 'bg-opacity-20');
+            });
+            
+            // Find and highlight active button
+            const activeButton = event.target.closest('.nav-link');
+            if (activeButton) {
+                activeButton.classList.remove('bg-white', 'bg-opacity-20');
+                activeButton.classList.add('bg-white', 'bg-opacity-30');
+            }
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            const ctx = document.getElementById('allotmentChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Used', 'Remaining'],
+                        datasets: [{
+                            data: [1.3, 1.2],
+                            backgroundColor: ['#ef4444', '#10b981'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Form Validation and Submission
+        function setupForms() {
+            // Patient Verification Form
+            const verificationForm = document.getElementById('verificationForm');
+            if (verificationForm) {
+                verificationForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const cardNumber = document.getElementById('cardNumber').value;
+                    const dateOfBirth = document.getElementById('dateOfBirth').value;
+                    
+                    if (!cardNumber || !dateOfBirth) {
+                        alert('Please fill in all required fields.');
+                        return;
+                    }
+                    
+                    // Simulate verification process
+                    const button = this.querySelector('button[type="submit"]');
+                    const originalText = button.innerHTML;
+                    
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
+                    button.disabled = true;
+                    
+                    setTimeout(() => {
+                        button.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Verified Successfully';
+                        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        button.classList.add('bg-green-600');
+                        
+                        setTimeout(() => {
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                            button.classList.remove('bg-green-600');
+                            button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                        }, 3000);
+                    }, 2000);
+                });
+            }
+
+            // Advanced Verification Form
+            const advancedForm = document.getElementById('advancedVerificationForm');
+            if (advancedForm) {
+                advancedForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Advanced verification submitted successfully!');
+                });
+            }
+
+            // Business Inquiry Form
+            const businessForm = document.getElementById('businessInquiryForm');
+            if (businessForm) {
+                businessForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const businessName = document.getElementById('businessName').value;
+                    const contactEmail = document.getElementById('contactEmail').value;
+                    
+                    if (!businessName || !contactEmail) {
+                        alert('Please fill in all required fields.');
+                        return;
+                    }
+                    
+                    alert('Thank you for your interest! We will contact you within 24 hours.');
+                    this.reset();
+                });
+            }
+        }
+
+        // Dispensary Search Functionality
+        function setupDispensarySearch() {
+            const citySelect = document.getElementById('citySelect');
+            const productSelect = document.getElementById('productSelect');
+            const sortSelect = document.getElementById('sortSelect');
+            
+            if (citySelect && productSelect && sortSelect) {
+                [citySelect, productSelect, sortSelect].forEach(select => {
+                    select.addEventListener('change', function() {
+                        // Simulate search filtering
+                        console.log('Filtering dispensaries...', {
+                            city: citySelect.value,
+                            product: productSelect.value,
+                            sort: sortSelect.value
+                        });
+                        
+                        // Add visual feedback
+                        const results = document.getElementById('dispensaryResults');
+                        if (results) {
+                            results.style.opacity = '0.5';
+                            setTimeout(() => {
+                                results.style.opacity = '1';
+                            }, 500);
+                        }
+                    });
+                });
+            }
+        }
+
+        // Input Enhancement
+        function enhanceInputs() {
+            const inputs = document.querySelectorAll('.form-input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+        }
+
+        // Accessibility Improvements
+        function improveAccessibility() {
+            // Add keyboard navigation support
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    document.body.classList.add('keyboard-navigation');
+                }
+            });
+            
+            document.addEventListener('mousedown', function() {
+                document.body.classList.remove('keyboard-navigation');
+            });
+            
+            // Add ARIA labels to interactive elements
+            const buttons = document.querySelectorAll('button:not([aria-label])');
+            buttons.forEach(button => {
+                if (!button.getAttribute('aria-label')) {
+                    const text = button.textContent.trim();
+                    if (text) {
+                        button.setAttribute('aria-label', text);
+                    }
+                }
+            });
+        }
+
+        // Performance Optimization
+        function optimizePerformance() {
+            // Lazy load non-critical elements
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('loaded');
+                    }
+                });
+            });
+            
+            const lazyElements = document.querySelectorAll('[data-lazy]');
+            lazyElements.forEach(el => observer.observe(el));
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            setupForms();
+            setupDispensarySearch();
+            enhanceInputs();
+            improveAccessibility();
+            optimizePerformance();
+            
+            // Show dashboard by default
+            showSection('dashboard');
+            
+            console.log('SDMMJTracker initialized successfully!');
+        });
+
+        // Error Handling
+        window.addEventListener('error', function(e) {
+            console.error('Application error:', e.error);
+            // In production, you would send this to your error tracking service
+        });
+
+        // Service Worker Registration (for PWA capabilities)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed');
+                    });
+            });
+        }
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"950e3156ec296a44","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.6.2","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDimyK09CgBRi%2FyGwJPZzmJ9OIUkCHc54jffVpBj4XLtx%2Bn0T0QTlHRRIH4Ff8K6qA%2BPVTN%2Fl3mnTyQNMIHMjoQr%2BlGXhS1ResRxbm9hxQRetyb7O%2BJ2yFdUAUp1ngThY6tQldvS8O93Gm0d2YI0A6RR3rL96TOTH%2FgxE%2FoXVfBNPP0xp8f0l0%2FZHufEkKi0EkXkqdKmVpTRWa8SL4cQ9hol%2F1VghcRUa7VEV1h9oIApZmm4Lpn%2BBSTxpRojKmXo%2BbRA3fVjXRtrvWboRCTF335aCHJM6dJ947LV3bckLzOlXaAIgEm%2FlsvQz95DUH57y5tDyV4VpHtnY%2BUjWRMfGasfc7BluMiv3ix9TP6h9AGwmWr4d3iqqh%2Bw9HeWPJvdaQD7CbJd6Nrx%2FgYdUKqh%2BrfVA7iYtmR4oTN9z%2BzkesB7ThRAW4sW5l1YZ2xi4S3zW%2F2XLb6vvzFS5Z%2BRofBEZdo6c1cczF%2B92l3zCQl3PXZi6Bqqpwb%2B4oNKOoiBlEwr4wyVaSbDVS2DCzxigLscJ8wo%3D";
+        window.__genspark_locale = "en-US";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDimyK09CgBRi/yGwJPZzmJ9OIUkCHc54jffVpBj4XLtx+n0T0QTlHRRIH4Ff8K6qA+PVTN/l3mnTyQNMIHMjoQr+lGXhS1ResRxbm9hxQRetyb7O+J2yFdUAUp1ngThY6tQldvS8O93Gm0d2YI0A6RR3rL96TOTH/gxE/oXVfBNPP0xp8f0l0/ZHufEkKi0EkXkqdKmVpTRWa8SL4cQ9hol/1VghcRUa7VEV1h9oIApZmm4Lpn+BSTxpRojKmXo+bRA3fVjXRtrvWboRCTF335aCHJM6dJ947LV3bckLzOlXaAIgEm/lsvQz95DUH57y5tDyV4VpHtnY+UjWRMfGasfc7BluMiv3ix9TP6h9AGwmWr4d3iqqh+w9HeWPJvdaQD7CbJd6Nrx/gYdUKqh+rfVA7iYtmR4oTN9z+zkesB7ThRAW4sW5l1YZ2xi4S3zW/2XLb6vvzFS5Z+RofBEZdo6c1cczF+92l3zCQl3PXZi6Bqqpwb+4oNKOoiBlEwr4wyVaSbDVS2DCzxigLscJ8wo=";
+    </script>
+    
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    
