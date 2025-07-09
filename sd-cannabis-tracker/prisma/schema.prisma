@@ -1,0 +1,215 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(cuid())
+  medicalCardNumber String    @unique
+  email             String?   @unique
+  name              String?
+  dateOfBirth       DateTime?
+  phone             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastVerified      DateTime?
+  
+  // Relations
+  purchases         Purchase[]
+  allotments        Allotment[]
+  sessions          Session[]
+  preferences       UserPreference?
+  savedProducts     SavedProduct[]
+  notifications     Notification[]
+  
+  @@index([medicalCardNumber])
+  @@index([email])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model Allotment {
+  id                 String    @id @default(cuid())
+  userId             String
+  periodStart        DateTime
+  periodEnd          DateTime
+  totalAllowedOz     Float     @default(3.0) // SD allows 3oz per 30 days
+  usedOz             Float     @default(0)
+  remainingOz        Float     @default(3.0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([periodStart, periodEnd])
+}
+
+model Purchase {
+  id                String    @id @default(cuid())
+  userId            String
+  dispensaryId      String
+  transactionId     String?   @unique
+  purchaseDate      DateTime
+  totalAmount       Float
+  taxAmount         Float
+  discountAmount    Float     @default(0)
+  paymentMethod     String?
+  createdAt         DateTime  @default(now())
+  
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dispensary        Dispensary @relation(fields: [dispensaryId], references: [id])
+  items             PurchaseItem[]
+  
+  @@index([userId])
+  @@index([dispensaryId])
+  @@index([purchaseDate])
+}
+
+model PurchaseItem {
+  id              String    @id @default(cuid())
+  purchaseId      String
+  productId       String
+  productName     String
+  productType     String    // Edible, Tincture, Topical, etc.
+  quantity        Float
+  unitPrice       Float
+  totalPrice      Float
+  thcContent      Float?    // mg
+  cbdContent      Float?    // mg
+  weight          Float     // in ounces
+  
+  purchase        Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product         Product?  @relation(fields: [productId], references: [id])
+  
+  @@index([purchaseId])
+  @@index([productId])
+}
+
+model Dispensary {
+  id              String    @id @default(cuid())
+  name            String
+  license         String?   @unique
+  address         String
+  city            String
+  state           String    @default("SD")
+  zipCode         String
+  phone           String?
+  email           String?
+  website         String?
+  apiSource       String?   // dutchie, leafly, weedmaps
+  apiId           String?
+  isActive        Boolean   @default(true)
+  isFeatured      Boolean   @default(false)
+  featuredUntil   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  purchases       Purchase[]
+  products        Product[]
+  inventory       Inventory[]
+  
+  @@index([city])
+  @@index([isActive, isFeatured])
+}
+
+model Product {
+  id              String    @id @default(cuid())
+  dispensaryId    String
+  name            String
+  brand           String?
+  category        String    // Edible, Tincture, Topical, etc.
+  subcategory     String?   // Gummies, Chocolates, etc.
+  description     String?   @db.Text
+  thcContent      Float?    // mg per unit
+  cbdContent      Float?    // mg per unit
+  size            String?   // 10-pack, 100mg, etc.
+  imageUrl        String?
+  apiSource       String?
+  apiId           String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  dispensary      Dispensary @relation(fields: [dispensaryId], references: [id])
+  inventory       Inventory[]
+  purchaseItems   PurchaseItem[]
+  savedByUsers    SavedProduct[]
+  
+  @@index([dispensaryId])
+  @@index([category])
+  @@index([name])
+}
+
+model Inventory {
+  id              String    @id @default(cuid())
+  productId       String
+  dispensaryId    String
+  price           Float
+  discountedPrice Float?
+  inStock         Boolean   @default(true)
+  quantity        Int?
+  lastUpdated     DateTime  @default(now())
+  
+  product         Product   @relation(fields: [productId], references: [id])
+  dispensary      Dispensary @relation(fields: [dispensaryId], references: [id])
+  
+  @@unique([productId, dispensaryId])
+  @@index([dispensaryId])
+  @@index([price])
+}
+
+model UserPreference {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  preferredCity     String?
+  notifications     Boolean   @default(true)
+  emailAlerts       Boolean   @default(true)
+  smsAlerts         Boolean   @default(false)
+  budgetLimit       Float?
+  favoriteCategory  String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SavedProduct {
+  id              String    @id @default(cuid())
+  userId          String
+  productId       String
+  savedAt         DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id])
+  
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model Notification {
+  id              String    @id @default(cuid())
+  userId          String
+  type            String    // ALLOTMENT_WARNING, PRICE_DROP, NEW_PRODUCT, etc.
+  title           String
+  message         String    @db.Text
+  isRead          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isRead])
+}

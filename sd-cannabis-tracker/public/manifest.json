@@ -1,0 +1,26 @@
+{
+  "name": "SD Cannabis Tracker",
+  "short_name": "SD Cannabis",
+  "description": "Track your medical cannabis allotment and find the best dispensary deals in South Dakota",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#22c542",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["medical", "health", "lifestyle"],
+  "lang": "en-US",
+  "dir": "ltr"
+}
